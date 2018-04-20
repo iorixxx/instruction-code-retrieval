@@ -1,5 +1,6 @@
 package edu.anadolu;
 
+import com.lexicalscope.jewel.cli.CliFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -23,17 +24,19 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
-        Path input = Paths.get("/Users/iorixxx/Desktop/input.txt");
+        final Params params = CliFactory.parseArguments(Params.class, args);
 
-        Path indexPath = Files.createTempDirectory("index");
+        Path input = Paths.get(params.input());
+
+        Path indexPath = params.index() == null ? Files.createTempDirectory(null) : Paths.get(params.index());
 
         Indexer indexer = new Indexer();
 
         indexer.index(indexPath, input);
 
         try (HighFreq highFreq = new HighFreq(indexPath)) {
-            highFreq.listTerms(10);
-            highFreq.listLongestMatches(10, 50);
+            highFreq.listTerms(params.numTerms());
+            highFreq.listLongestMatches(params.numTerms(), params.minTF());
         }
     }
 
